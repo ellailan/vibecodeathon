@@ -543,37 +543,49 @@ Should you get out of bed today? Find out at https://github.com/ellailan/vibecod
            SHARE BUTTON
         ============ */
         const shareBtn = document.getElementById("shareBtn");
+const shareStatus = document.getElementById("shareStatus");
 
 shareBtn.addEventListener("click", () => {
     if (!lastShareText) return;
 
+    // Try navigator.clipboard first (modern browsers)
     if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(lastShareText)
-            .then(() => {
-                document.getElementById("shareStatus").textContent = "Copied to clipboard ✅";
-            })
-            .catch(() => {
-                document.getElementById("shareStatus").textContent = "Failed to copy 😢";
-            });
+        navigator.clipboard.writeText(lastShareText).then(() => {
+            showShareFeedback("Copied to clipboard ✅");
+        }).catch(() => {
+            fallbackCopy();
+        });
     } else {
-        const textArea = document.createElement("textarea");
-        textArea.value = lastShareText;
-        textArea.style.position = "fixed";
-        textArea.style.opacity = 0;
-        document.body.appendChild(textArea);
-        textArea.focus();
-        textArea.select();
+        fallbackCopy();
+    }
+
+    function fallbackCopy() {
+        // Create temporary textarea
+        const textarea = document.createElement("textarea");
+        textarea.value = lastShareText;
+        textarea.style.position = "fixed";  // prevent scrolling
+        textarea.style.opacity = "0";
+        document.body.appendChild(textarea);
+        textarea.focus();
+        textarea.select();
 
         try {
             const successful = document.execCommand('copy');
-            document.getElementById("shareStatus").textContent = successful ? "Copied to clipboard ✅" : "Failed to copy 😢";
+            showShareFeedback(successful ? "Copied to clipboard ✅" : "Failed to copy 😢");
         } catch (err) {
-            document.getElementById("shareStatus").textContent = "Failed to copy 😢";
+            showShareFeedback("Failed to copy 😢");
         }
 
-        document.body.removeChild(textArea);
+        document.body.removeChild(textarea);
+    }
+
+    function showShareFeedback(msg) {
+        shareStatus.textContent = msg;
+        // Optional: remove message after 2 seconds
+        setTimeout(() => { shareStatus.textContent = ""; }, 2000);
     }
 });
+
 
     </script>
 
