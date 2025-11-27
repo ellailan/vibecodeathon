@@ -6,6 +6,8 @@
 <title>Should I Get Out of Bed?</title>
 
 <style>
+    
+    
     body {
         margin: 0;
         padding: 20px;
@@ -56,6 +58,31 @@
         transform: scale(1.2);
     }
 
+    .course-input {
+        margin-bottom: 20px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+    }
+
+
+    #courseCode {
+        padding: 10px 14px;
+        font-size: 1rem;
+        border-radius: 8px;
+        border: 1px solid #ccc;
+        text-transform: uppercase; /* auto-uppercase user input */
+    }
+
+
+    #courseError {
+        color: #d9534f;
+        font-size: 0.9rem;
+        min-height: 1.2em; /* reserve space to prevent layout jump */
+    }
+
+
     /* ========== Crush Buttons ========== */
     #crush-container {
         display: flex;
@@ -77,6 +104,7 @@
         border: 2px solid black;
         background: #bfe0ff;
     }
+
 
     /* ========== Main Ask Button ========== */
     #askButton {
@@ -128,10 +156,26 @@
 </div>
 
 <!-- Ask Button -->
-<div id="ask-section">
+<div class="button-container">
     <h1>Should I Get Out of Bed?</h1>
+
+
+    <!-- NEW: course code input -->
+    <div class="course-input">
+        <label for="courseCode">Course code</label>
+        <input
+            id="courseCode"
+            type="text"
+            maxlength="7"
+            placeholder="e.g. CPSC210"
+        >
+        <div id="courseError"></div>
+    </div>
+    <!-- END NEW -->
+
     <button id="askButton">?</button>
 </div>
+
 
 <!-- Result -->
 <div id="result"></div>
@@ -168,24 +212,49 @@
         crushYes.classList.remove("selected");
     });
 
-    /* ========= Ask Logic ========= */
+    /* ========= Ask Logic (MERGED) ========= */
     document.getElementById("askButton").addEventListener("click", async () => {
 
-        // HIDE QUESTIONS after clicking
+        const resultEl = document.getElementById("result");
+        const courseInputEl = document.getElementById("courseCode");
+        const courseErrorEl = document.getElementById("courseError");
+        resultEl.textContent = "";
+        courseErrorEl.textContent = "";
+
+        // Hide mood and crush questions
         document.getElementById("mood-section").style.display = "none";
         document.getElementById("crush-section").style.display = "none";
 
-        const resultEl = document.getElementById("result");
-        resultEl.textContent = "";
+        /* ===== COURSE VALIDATION ===== */
+        let courseCode = courseInputEl.value.trim().toUpperCase();
+        const coursePattern = /^[A-Z]{4}[0-9]{3}$/;
+
+        if (!coursePattern.test(courseCode)) {
+            courseErrorEl.textContent =
+                "Course code must be 4 capital letters followed by 3 digits (e.g. CPSC210).";
+            return;
+        }
+
+        const subject = courseCode.slice(0, 4);
+        const level = parseInt(courseCode.slice(4));
+
+        let classDecisionScore = 0;
+
+        if (level >= 100 && level < 200) classDecisionScore += 100;
+        if (subject === "POLI") classDecisionScore -= 50;
+        if (subject === "CPSC" || subject === "MATH") classDecisionScore += 100;
 
         try {
-            // Vancouver local time
+            /* ===== TIME ===== */
             const now = new Date();
             const vancouverTime = now.toLocaleString("en-US", { timeZone: "America/Vancouver" });
             const hour = new Date(vancouverTime).getHours();
+            const isAfternoon = hour >= 12 && hour < 24;
 
-            // Weather API
-            const url = "https://api.open-meteo.com/v1/forecast?latitude=49.2497&longitude=-123.1193&current_weather=true&hourly=cloudcover,precipitation";
+            /* ===== WEATHER API ===== */
+            const url =
+                "https://api.open-meteo.com/v1/forecast?latitude=49.2497&longitude=-123.1193&current_weather=true&hourly=cloudcover,precipitation";
+
             const response = await fetch(url);
             const data = await response.json();
 
@@ -194,30 +263,43 @@
 
             const isCloudy = code >= 1 && code <= 3;
             const isRainy = (code >= 51 && code <= 67) || (code >= 80 && code <= 82);
-            const isAfternoon = hour >= 12 && hour < 24;
 
-            let decision = isAfternoon || (temperature > 7 && !isCloudy && !isRainy);
+            /* ===== WEATHER SCORING ===== */
+            let weatherScore = 0;
+            if (isAfternoon) weatherScore += 100;
+            if (temperature > 7 && !isCloudy && !isRainy) weatherScore += 50;
+            if (isRainy) weatherScore -= 40;
+            if (isCloudy) weatherScore -= 10;
 
-            if (moodScore >= 4) decision = true;
-            if (moodScore <= 2) decision = false;
+            /* ===== MOOD + CRUSH ===== */
+            if (moodScore >= 4) weatherScore += 30;
+            if (moodScore <= 2) weatherScore -= 30;
 
-            if (crushInClass) decision = true;
+            if (crushInClass) weatherScore += 200;
 
-            resultEl.innerHTML =
-                `<h2>${decision ? "YES" : "NO"}</h2>
-                 <div style="font-size: 1.7rem;">
-                     ${parseInt(temperature)}°C
-                     ${isCloudy ? "🌤️" : "🌥️"}
-                     ${isRainy ? "🌧️" : "🌂"}
-                     <br><small>${hour}:00 in Vancouver</small>
-                     <br><small>Mood score: ${moodScore}</small>
-                     <br><small>Crush in class: ${crushInClass ? "Yes" : "No"}</small>
-                 </div>`;
+            /* ===== FINAL DECISION ===== */
+            const totalScore = weatherScore + classDecisionScore;
+            const shouldGetOutOfBed = totalScore >= 50;
+
+            resultEl.innerHTML = `
+                <h2>${shouldGetOutOfBed ? "YES" : "NO"}</h2>
+                <div style="font-size: 2rem;">
+                    ${parseInt(temperature)}°C
+                    ${isCloudy ? "🌤️" : "🌥️"}
+                    ${isRainy ? "🌧️" : "🌂"}
+                    <br><small>${hour}:00 in Vancouver</small>
+                    <br><small>Course: ${courseCode}</small>
+                    <br><small>Mood: ${moodScore}</small>
+                    <br><small>Crush in class: ${crushInClass ? "Yes" : "No"}</small>
+                </div>
+            `;
+
         } catch (err) {
             console.error(err);
         }
     });
 </script>
+
 
 </body>
 </html>
