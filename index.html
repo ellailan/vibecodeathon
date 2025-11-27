@@ -542,90 +542,49 @@ Should you get out of bed today? Find out at https://ellailan.github.io/rise-and
         /* ============
            SHARE BUTTON
         ============ */
-
-
-let lastShareText = "";
-
-const shareBtn = document.getElementById("shareBtn");
+        const shareBtn = document.getElementById("shareBtn");
 const shareStatus = document.getElementById("shareStatus");
 
-if (shareBtn && shareStatus) {
-    shareBtn.addEventListener("click", async (e) => {
-        // Prevent any default behavior
-        e.preventDefault();
-        
-        if (!lastShareText) {
-            showShareFeedback("Nothing to share yet 📋");
-            return;
-        }
+shareBtn.addEventListener("click", () => {
+    if (!lastShareText) return;
 
-        // Try native share API first (best for mobile)
-        if (navigator.share) {
-            try {
-                await navigator.share({
-                    text: lastShareText
-                });
-                showShareFeedback("Shared successfully ✅");
-                return;
-            } catch (err) {
-                // User cancelled or share failed, fall through to clipboard
-                if (err.name !== 'AbortError') {
-                    console.warn("Share failed:", err);
-                }
-            }
-        }
-
-        // Try modern clipboard API
-        try {
-            await navigator.clipboard.writeText(lastShareText);
+    // Try navigator.clipboard first (modern browsers)
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(lastShareText).then(() => {
             showShareFeedback("Copied to clipboard ✅");
-        } catch (err) {
-            console.warn("Clipboard API failed:", err);
-            // Use fallback for older browsers
+        }).catch(() => {
             fallbackCopy();
+        });
+    } else {
+        fallbackCopy();
+    }
+
+    function fallbackCopy() {
+        // Create temporary textarea
+        const textarea = document.createElement("textarea");
+        textarea.value = lastShareText;
+        textarea.style.position = "fixed";  // prevent scrolling
+        textarea.style.opacity = "0";
+        document.body.appendChild(textarea);
+        textarea.focus();
+        textarea.select();
+
+        try {
+            const successful = document.execCommand('copy');
+            showShareFeedback(successful ? "Copied to clipboard ✅" : "Failed to copy 😢");
+        } catch (err) {
+            showShareFeedback("Failed to copy 😢");
         }
-    });
-}
 
-function fallbackCopy() {
-    const textarea = document.createElement("textarea");
-    textarea.value = lastShareText;
-    
-    // Critical for mobile Safari
-    textarea.style.position = "absolute";
-    textarea.style.left = "-9999px";
-    textarea.style.top = (window.pageYOffset || document.documentElement.scrollTop) + "px";
-    textarea.setAttribute("readonly", "");
-    
-    document.body.appendChild(textarea);
-    
-    // iOS requires this
-    const range = document.createRange();
-    range.selectNodeContents(textarea);
-    
-    const selection = window.getSelection();
-    selection.removeAllRanges();
-    selection.addRange(range);
-    
-    textarea.setSelectionRange(0, textarea.value.length);
-
-    let successful = false;
-    try {
-        successful = document.execCommand('copy');
-    } catch (err) {
-        console.error("execCommand failed:", err);
+        document.body.removeChild(textarea);
     }
-    
-    document.body.removeChild(textarea);
-    showShareFeedback(successful ? "Copied to clipboard ✅" : "Failed to copy 😢");
-}
 
-function showShareFeedback(msg) {
-    if (shareStatus) {
+    function showShareFeedback(msg) {
         shareStatus.textContent = msg;
-        setTimeout(() => { shareStatus.textContent = ""; }, 2500);
+        // Optional: remove message after 2 seconds
+        setTimeout(() => { shareStatus.textContent = ""; }, 2000);
     }
-}
+});
 
 
     </script>
