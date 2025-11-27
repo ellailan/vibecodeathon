@@ -1,305 +1,549 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Should I Get Out of Bed?</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Should I Get Out of Bed?</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
 
-<style>
-    
-    
-    body {
-        margin: 0;
-        padding: 20px;
-        font-family: Arial, sans-serif;
-        background: #f2f2f2;
-        text-align: center;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 25px;
-    }
+        body {
+            font-family: 'Arial Black', 'Arial Bold', Arial, sans-serif;
+            background: #e8e8e8;
+            overflow-x: hidden;
+        }
 
-    h1, h2 {
-        margin: 0;
-    }
+        .page {
+            background: #f9e5a0;
+            width: 100%;
+            min-height: 100vh;
+            padding: 60px 80px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
 
-    /* ========== Layout Containers ========== */
-    #mood-section,
-    #crush-section,
-    #ask-section {
-        width: 100%;
-        max-width: 450px;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 15px;
-    }
+        /* Header at top */
+        .header-small {
+            font-size: 1.3rem;
+            color: #ff9500;
+            margin-bottom: 20px;
+            font-weight: normal;
+            letter-spacing: 1px;
+        }
 
-    /* ========== Mood Buttons ========== */
-    #mood-container {
-        display: flex;
-        justify-content: center;
-        gap: 12px;
-        flex-wrap: wrap;
-    }
+        .header-big {
+            font-size: 4.5rem;
+            color: #ff9500;
+            line-height: 1.1;
+            margin-bottom: 60px;
+            letter-spacing: 2px;
+        }
 
-    .mood-btn {
-        width: 45px;
-        height: 45px;
-        border-radius: 50%;
-        border: 3px solid transparent;
-        cursor: pointer;
-        transition: transform 0.15s ease, border 0.15s ease;
-    }
+        /* Form section */
+        .form-title {
+            font-size: 2rem;
+            color: #ff9500;
+            margin-bottom: 40px;
+            font-weight: bold;
+        }
 
-    .mood-btn.selected {
-        border: 3px solid black;
-        transform: scale(1.2);
-    }
+        .question {
+            margin-bottom: 40px;
+        }
 
-    .course-input {
-        margin-bottom: 20px;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 8px;
-    }
+        .question-text {
+            font-size: 1.5rem;
+            color: #ff9500;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+
+        /* Mood emojis */
+        .mood-container {
+            display: flex;
+            gap: 15px;
+        }
+
+        .mood-emoji {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.2s;
+            border: 3px solid transparent;
+        }
+
+        .mood-emoji:hover {
+            transform: scale(1.1);
+        }
+
+        .mood-emoji.selected {
+            border: 3px solid #ff9500;
+            transform: scale(1.2);
+        }
+
+        /* Course inputs */
+        .course-inputs {
+            display: flex;
+            gap: 20px;
+        }
+
+        .course-input-group {
+            flex: 1;
+        }
+
+        .input-label {
+            display: block;
+            font-size: 0.9rem;
+            color: #ff9500;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+
+        .course-input {
+            width: 100%;
+            padding: 15px;
+            font-size: 1.2rem;
+            border: none;
+            background: white;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        #courseError {
+            color: #d9534f;
+            font-size: 0.9rem;
+            margin-top: 10px;
+            min-height: 20px;
+        }
+
+        /* Crush buttons */
+        .crush-container {
+            display: flex;
+            gap: 20px;
+        }
+
+        .crush-btn {
+            flex: 1;
+            padding: 20px;
+            font-size: 1.3rem;
+            border: none;
+            background: white;
+            cursor: pointer;
+            font-weight: bold;
+            color: #ff9500;
+            transition: all 0.2s;
+        }
+
+        .crush-btn:hover {
+            transform: scale(1.05);
+        }
+
+        .crush-btn.selected {
+            background: #ff9500;
+            color: white;
+        }
+
+        /* CTA Button */
+        .cta-button {
+            background: #ffd966;
+            border: none;
+            padding: 20px 60px;
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: #ff9500;
+            cursor: pointer;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            transition: transform 0.1s;
+            margin-top: 40px;
+            align-self: center;
+        }
+
+        .cta-button:hover {
+            transform: scale(1.05);
+        }
+
+        .cta-button:active {
+            transform: scale(0.98);
+        }
+
+        /* Result page */
+        #resultPage {
+            background: #a8d8ea;
+            color: #2c3e50;
+        }
+
+        .result-header {
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+            letter-spacing: 1px;
+            font-weight: normal;
+        }
+
+        .result-decision {
+            font-size: 5rem;
+            margin-bottom: 30px;
+            line-height: 1;
+            letter-spacing: 3px;
+        }
+
+        .result-reason {
+            font-size: 1.3rem;
+            line-height: 1.6;
+            margin-bottom: 60px;
+            font-weight: normal;
+        }
+
+        .result-details {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .weather-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            font-size: 1.5rem;
+        }
+
+        .weather-info span {
+            font-size: 3rem;
+        }
+
+        .time-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 2rem;
+            font-weight: bold;
+        }
+
+        .time-info span {
+            font-size: 3rem;
+        }
+
+        /* --- WEATHER ANIMATIONS --- */
+
+        /* CLOUDS */
+        .cloud {
+            position: absolute;
+            width: 120px;
+            height: 60px;
+            background: white;
+            border-radius: 50px;
+            opacity: 0.9;
+            top: 10%;
+            animation: moveClouds 18s linear infinite;
+            filter: blur(1px);
+        }
+
+        .cloud:before,
+        .cloud:after {
+            content: "";
+            position: absolute;
+            background: white;
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            top: -20px;
+            left: 10px;
+        }
+
+        .cloud:after {
+            width: 60px;
+            height: 60px;
+            left: 50px;
+            top: -10px;
+        }
+
+        @keyframes moveClouds {
+            0% {
+                left: -150px;
+            }
+
+            100% {
+                left: 110%;
+            }
+        }
+
+        /* SUN RAYS */
+        .sun {
+            position: absolute;
+            top: 15%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 120px;
+            height: 120px;
+            background: #ffdd55;
+            border-radius: 50%;
+            box-shadow: 0 0 40px #ffdd55;
+            animation: spinSun 12s linear infinite;
+        }
+
+        @keyframes spinSun {
+            from {
+                transform: translateX(-50%) rotate(0deg);
+            }
+
+            to {
+                transform: translateX(-50%) rotate(360deg);
+            }
+        }
+
+        /* RAIN */
+        .rain-drop {
+            position: absolute;
+            width: 3px;
+            height: 15px;
+            background: #6bb6ff;
+            border-radius: 2px;
+            animation: rainFall 0.8s linear infinite;
+            opacity: 0.8;
+        }
+
+        @keyframes rainFall {
+            0% {
+                top: -20px;
+            }
+
+            100% {
+                top: 110vh;
+            }
+        }
 
 
-    #courseCode {
-        padding: 10px 14px;
-        font-size: 1rem;
-        border-radius: 8px;
-        border: 1px solid #ccc;
-        text-transform: uppercase; /* auto-uppercase user input */
-    }
+        @media (max-width: 768px) {
+            .page {
+                padding: 40px;
+            }
 
+            .header-big {
+                font-size: 3rem;
+            }
 
-    #courseError {
-        color: #d9534f;
-        font-size: 0.9rem;
-        min-height: 1.2em; /* reserve space to prevent layout jump */
-    }
+            .course-inputs {
+                flex-direction: column;
+            }
 
+            .result-decision {
+                font-size: 3.5rem;
+            }
 
-    /* ========== Crush Buttons ========== */
-    #crush-container {
-        display: flex;
-        justify-content: center;
-        gap: 20px;
-        flex-wrap: wrap;
-    }
-
-    .crush-btn {
-        padding: 10px 20px;
-        font-size: 1rem;
-        border-radius: 12px;
-        background: #ddd;
-        cursor: pointer;
-        border: 2px solid transparent;
-    }
-
-    .crush-btn.selected {
-        border: 2px solid black;
-        background: #bfe0ff;
-    }
-
-
-    /* ========== Main Ask Button ========== */
-    #askButton {
-        font-size: 3rem;
-        padding: 15px 35px;
-        border: none;
-        border-radius: 20px;
-        background: #4a90e2;
-        color: white;
-        cursor: pointer;
-    }
-
-    #askButton:active {
-        background: #357ac8;
-    }
-
-    /* ========== Result Box ========== */
-    #result {
-        font-size: 4rem;
-        font-weight: bold;
-        min-height: 120px;
-        margin-top: 20px;
-    }
-
-</style>
+            .result-details {
+                flex-direction: column;
+                gap: 30px;
+            }
+        }
+    </style>
 </head>
 
 <body>
 
-<!-- Mood Section -->
-<div id="mood-section">
-    <h2>How do you feel today?</h2>
-    <div id="mood-container">
-        <div class="mood-btn" data-value="1" style="background:#d62727;"></div>
-        <div class="mood-btn" data-value="2" style="background:#ff7f0e;"></div>
-        <div class="mood-btn" data-value="3" style="background:#ffdd00;"></div>
-        <div class="mood-btn" data-value="4" style="background:#a8e458;"></div>
-        <div class="mood-btn" data-value="5" style="background:#34c759;"></div>
-    </div>
-</div>
+    <!-- Questions Page -->
+    <div id="questionsPage" class="page">
+        <div class="header-small">the hardest choice you'll make this morning</div>
+        <div class="header-big">SHOULD YOU GET<br>OUT OF BED?</div>
 
-<!-- Crush Section -->
-<div id="crush-section">
-    <h2>Is your crush in your first class?</h2>
-    <div id="crush-container">
-        <button class="crush-btn" id="crushYes">Yes</button>
-        <button class="crush-btn" id="crushNo">No</button>
-    </div>
-</div>
+        <div class="form-title">Good Morning!</div>
 
-<!-- Ask Button -->
-<div class="button-container">
-    <h1>Should I Get Out of Bed?</h1>
+        <div class="question">
+            <div class="question-text">How are you feeling today?</div>
+            <div class="mood-container">
+                <div class="mood-emoji" data-value="1" style="background:#ff6b6b;">😢</div>
+                <div class="mood-emoji" data-value="2" style="background:#ffb347;">😕</div>
+                <div class="mood-emoji" data-value="3" style="background:#f9e5a0;">😐</div>
+                <div class="mood-emoji" data-value="4" style="background:#95e1d3;">🙂</div>
+                <div class="mood-emoji" data-value="5" style="background:#4ecdc4;">😊</div>
+            </div>
+        </div>
 
-
-    <!-- NEW: course code input -->
-    <div class="course-input">
-        <label for="courseCode">Course code</label>
-        <input
-            id="courseCode"
-            type="text"
-            maxlength="7"
-            placeholder="e.g. CPSC210"
-        >
-        <div id="courseError"></div>
-    </div>
-    <!-- END NEW -->
-
-    <button id="askButton">?</button>
-</div>
-
-
-<!-- Result -->
-<div id="result"></div>
-
-
-<script>
-    let moodScore = 3;
-    let crushInClass = false;
-
-    /* ========= Mood Logic ========= */
-    const moodButtons = document.querySelectorAll(".mood-btn");
-    moodButtons.forEach(btn => {
-        btn.addEventListener("click", () => {
-            moodButtons.forEach(b => b.classList.remove("selected"));
-            btn.classList.add("selected");
-            moodScore = parseInt(btn.dataset.value);
-        });
-    });
-    moodButtons[2].classList.add("selected");
-
-    /* ========= Crush Logic ========= */
-    const crushYes = document.getElementById("crushYes");
-    const crushNo = document.getElementById("crushNo");
-
-    crushYes.addEventListener("click", () => {
-        crushInClass = true;
-        crushYes.classList.add("selected");
-        crushNo.classList.remove("selected");
-    });
-
-    crushNo.addEventListener("click", () => {
-        crushInClass = false;
-        crushNo.classList.add("selected");
-        crushYes.classList.remove("selected");
-    });
-
-    /* ========= Ask Logic (MERGED) ========= */
-    document.getElementById("askButton").addEventListener("click", async () => {
-
-        const resultEl = document.getElementById("result");
-        const courseInputEl = document.getElementById("courseCode");
-        const courseErrorEl = document.getElementById("courseError");
-        resultEl.textContent = "";
-        courseErrorEl.textContent = "";
-
-        // Hide mood and crush questions
-        document.getElementById("mood-section").style.display = "none";
-        document.getElementById("crush-section").style.display = "none";
-
-        /* ===== COURSE VALIDATION ===== */
-        let courseCode = courseInputEl.value.trim().toUpperCase();
-        const coursePattern = /^[A-Z]{4}[0-9]{3}$/;
-
-        if (!coursePattern.test(courseCode)) {
-            courseErrorEl.textContent =
-                "Course code must be 4 capital letters followed by 3 digits (e.g. CPSC210).";
-            return;
-        }
-
-        const subject = courseCode.slice(0, 4);
-        const level = parseInt(courseCode.slice(4));
-
-        let classDecisionScore = 0;
-
-        if (level >= 100 && level < 200) classDecisionScore += 100;
-        if (subject === "POLI") classDecisionScore -= 50;
-        if (subject === "CPSC" || subject === "MATH") classDecisionScore += 100;
-
-        try {
-            /* ===== TIME ===== */
-            const now = new Date();
-            const vancouverTime = now.toLocaleString("en-US", { timeZone: "America/Vancouver" });
-            const hour = new Date(vancouverTime).getHours();
-            const isAfternoon = hour >= 12 && hour < 24;
-
-            /* ===== WEATHER API ===== */
-            const url =
-                "https://api.open-meteo.com/v1/forecast?latitude=49.2497&longitude=-123.1193&current_weather=true&hourly=cloudcover,precipitation";
-
-            const response = await fetch(url);
-            const data = await response.json();
-
-            const temperature = data.current_weather.temperature;
-            const code = data.current_weather.weathercode;
-
-            const isCloudy = code >= 1 && code <= 3;
-            const isRainy = (code >= 51 && code <= 67) || (code >= 80 && code <= 82);
-
-            /* ===== WEATHER SCORING ===== */
-            let weatherScore = 0;
-            if (isAfternoon) weatherScore += 100;
-            if (temperature > 7 && !isCloudy && !isRainy) weatherScore += 50;
-            if (isRainy) weatherScore -= 40;
-            if (isCloudy) weatherScore -= 10;
-
-            /* ===== MOOD + CRUSH ===== */
-            if (moodScore >= 4) weatherScore += 30;
-            if (moodScore <= 2) weatherScore -= 30;
-
-            if (crushInClass) weatherScore += 200;
-
-            /* ===== FINAL DECISION ===== */
-            const totalScore = weatherScore + classDecisionScore;
-            const shouldGetOutOfBed = totalScore >= 50;
-
-            resultEl.innerHTML = `
-                <h2>${shouldGetOutOfBed ? "YES" : "NO"}</h2>
-                <div style="font-size: 2rem;">
-                    ${parseInt(temperature)}°C
-                    ${isCloudy ? "🌤️" : "🌥️"}
-                    ${isRainy ? "🌧️" : "🌂"}
-                    <br><small>${hour}:00 in Vancouver</small>
-                    <br><small>Course: ${courseCode}</small>
-                    <br><small>Mood: ${moodScore}</small>
-                    <br><small>Crush in class: ${crushInClass ? "Yes" : "No"}</small>
+        <div class="question">
+            <div class="question-text">What's your first class today?</div>
+            <div class="course-inputs">
+                <div class="course-input-group">
+                    <label class="input-label">Course Code</label>
+                    <input class="course-input" id="courseCode" type="text" maxlength="4" placeholder="CPSC">
                 </div>
-            `;
+                <div class="course-input-group">
+                    <label class="input-label">Course Number</label>
+                    <input class="course-input" id="courseNumber" type="text" maxlength="3" placeholder="210">
+                </div>
+            </div>
+            <div id="courseError"></div>
+        </div>
 
-        } catch (err) {
-            console.error(err);
+        <div class="question">
+            <div class="question-text">... and is your crush in this class?</div>
+            <div class="crush-container">
+                <button class="crush-btn" id="crushYes">💕 YESSSS</button>
+                <button class="crush-btn" id="crushNo">NO</button>
+            </div>
+        </div>
+
+        <button class="cta-button" onclick="calculate()">Let's Find Out</button>
+    </div>
+
+    <!-- Result Page -->
+    <div id="resultPage" class="page" style="display: none; position: relative; overflow: hidden;">
+        <div id="weatherAnimation"></div>
+    
+        <div class="result-header">by our calculations...</div>
+        <div class="result-decision" id="decision">GET OUT OF BED</div>
+        <div class="result-reason" id="reason">
+            it's nice and hot outside!<br>
+            and still bright and early...<br>
+            seems like the perfect day to run into<br>
+            your crush
+        </div>
+        <div class="result-details">
+            <div class="weather-info">
+                <span id="weatherEmoji">😰☀️</span>
+                <div>
+                    <div id="temperature">25°C and sunny</div>
+                    <div id="precipitation">0mm precip</div>
+                </div>
+            </div>
+            <div class="time-info">
+                <span>⏰</span>
+                <div id="time">07:00 am</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let moodScore = 3;
+        let crushInClass = false;
+
+        // Mood selection
+        const moodEmojis = document.querySelectorAll(".mood-emoji");
+        moodEmojis.forEach(emoji => {
+            emoji.addEventListener("click", () => {
+                moodEmojis.forEach(e => e.classList.remove("selected"));
+                emoji.classList.add("selected");
+                moodScore = parseInt(emoji.dataset.value);
+            });
+        });
+        moodEmojis[2].classList.add("selected");
+
+        // Crush selection
+        const crushYes = document.getElementById("crushYes");
+        const crushNo = document.getElementById("crushNo");
+
+        crushYes.addEventListener("click", () => {
+            crushInClass = true;
+            crushYes.classList.add("selected");
+            crushNo.classList.remove("selected");
+        });
+
+        crushNo.addEventListener("click", () => {
+            crushInClass = false;
+            crushNo.classList.add("selected");
+            crushYes.classList.remove("selected");
+        });
+
+        // Calculate and show result
+        async function calculate() {
+            const courseCodeEl = document.getElementById("courseCode");
+            const courseNumberEl = document.getElementById("courseNumber");
+            const courseErrorEl = document.getElementById("courseError");
+            courseErrorEl.textContent = "";
+
+            const code = courseCodeEl.value.trim().toUpperCase();
+            const number = courseNumberEl.value.trim();
+
+            if (!/^[A-Z]{4}$/.test(code) || !/^[0-9]{3}$/.test(number)) {
+                courseErrorEl.textContent = "Please enter valid course code (4 letters) and number (3 digits)";
+                return;
+            }
+
+            const courseCode = code + number;
+            const subject = code;
+            const level = parseInt(number);
+
+            let classDecisionScore = 0;
+            if (level >= 100 && level < 200) classDecisionScore += 100;
+            if (subject === "POLI") classDecisionScore -= 50;
+            if (subject === "CPSC" || subject === "MATH") classDecisionScore += 100;
+
+            try {
+                const now = new Date();
+                const vancouverTime = now.toLocaleString("en-US", { timeZone: "America/Vancouver" });
+                const hour = new Date(vancouverTime).getHours();
+                const minute = new Date(vancouverTime).getMinutes();
+                const isAfternoon = hour >= 12 && hour < 24;
+
+                const url = "https://api.open-meteo.com/v1/forecast?latitude=49.2497&longitude=-123.1193&current_weather=true";
+                const response = await fetch(url);
+                const data = await response.json();
+
+                const temperature = data.current_weather.temperature;
+                const code = data.current_weather.weathercode;
+
+                const isCloudy = code >= 1 && code <= 3;
+                const isRainy = (code >= 51 && code <= 67) || (code >= 80 && code <= 82);
+
+                let weatherScore = 0;
+                if (isAfternoon) weatherScore += 100;
+                if (temperature > 7 && !isCloudy && !isRainy) weatherScore += 50;
+                if (isRainy) weatherScore -= 40;
+                if (isCloudy) weatherScore -= 10;
+
+                if (moodScore >= 4) weatherScore += 30;
+                if (moodScore <= 2) weatherScore -= 30;
+                if (crushInClass) weatherScore += 200;
+
+                const totalScore = weatherScore + classDecisionScore;
+                const shouldGetOutOfBed = totalScore >= 50;
+
+                // Update result page
+                document.getElementById("decision").textContent = shouldGetOutOfBed ? "GET OUT OF BED" : "STAY IN BED";
+
+                let reasonText = "";
+                if (shouldGetOutOfBed) {
+                    reasonText = `it's ${temperature > 15 ? "nice and hot" : "decent"} outside!<br>`;
+                    reasonText += isAfternoon ? "perfect afternoon vibes...<br>" : "and still bright and early...<br>";
+                    reasonText += crushInClass ? "seems like the perfect day to run into<br>your crush" : "great day to be productive!";
+                } else {
+                    reasonText = `it's ${temperature < 5 ? "freezing" : "not great"} outside<br>`;
+                    reasonText += isRainy ? "and it's raining...<br>" : "and kinda gloomy...<br>";
+                    reasonText += "maybe stay cozy in bed today";
+                }
+                document.getElementById("reason").innerHTML = reasonText;
+
+                const weatherEmoji = isRainy ? "🌧️" : (isCloudy ? "☁️" : "☀️");
+                const tempEmoji = temperature > 20 ? "😰" : (temperature < 5 ? "🥶" : "😊");
+                document.getElementById("weatherEmoji").textContent = tempEmoji + weatherEmoji;
+                document.getElementById("temperature").textContent = `${Math.round(temperature)}°C and ${isRainy ? "rainy" : (isCloudy ? "cloudy" : "sunny")}`;
+                document.getElementById("precipitation").textContent = isRainy ? "5mm+ precip" : "0mm precip";
+                document.getElementById("time").textContent = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')} ${hour < 12 ? 'am' : 'pm'}`;
+
+                // Show and scroll to result
+                document.getElementById("resultPage").style.display = "flex";
+                setTimeout(() => {
+                    document.getElementById("resultPage").scrollIntoView({ behavior: 'smooth' });
+                }, 100);
+
+            } catch (err) {
+                console.error(err);
+                alert("Couldn't fetch weather data. Please try again!");
+            }
         }
-    });
-</script>
-
+    </script>
 
 </body>
+
 </html>
